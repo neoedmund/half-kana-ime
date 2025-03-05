@@ -1,5 +1,7 @@
 package com.example.composeime
 
+import android.graphics.Paint.Style
+import android.text.style.StyleSpan
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -14,15 +16,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import splitties.systemservices.inputMethodManager
 
 @Composable
 fun KeyboardScreen() {
     val keysMatrix = arrayOf(
-        arrayOf("Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"),
-        arrayOf("A", "S", "D", "F", "G", "H", "J", "K", "L"),
-        arrayOf("Z", "X", "C", "V", "B", "N", "M")
+        arrayOf("_sel", "_back"),
+        arrayOf("ｱ", "ｲ", "ｳ", "ｴ", "ｵ", "ｶ", "ｷ", "ｸ", "ｹ", "ｺ", "ｻ", "ｼ", "ｽ", "ｾ", "ｿ"),
+        arrayOf("ﾀ", "ﾁ", "ﾂ", "ﾃ", "ﾄ", "ﾅ", "ﾆ", "ﾇ", "ﾈ", "ﾉ", "ﾊ", "ﾋ", "ﾌ", "ﾍ", "ﾎ"),
+        arrayOf("ﾏ", "ﾐ", "ﾑ", "ﾒ", "ﾓ", "ﾔ", "ﾕ", "ﾖ", "ﾗ", "ﾘ", "ﾙ", "ﾚ", "ﾛ", "ﾜ", "ﾝ"),
+        arrayOf("ﾞ", "ﾟ", "･", "ｦ", "ｧ", "ｨ", "ｩ", "ｪ", "ｫ", "ｬ", "ｭ", "ｮ", "ｯ", "ｰ"),
     )
     Column(
         modifier = Modifier
@@ -30,7 +40,7 @@ fun KeyboardScreen() {
             .fillMaxWidth()
     ) {
         keysMatrix.forEach { row ->
-            FixedHeightBox(modifier = Modifier.fillMaxWidth(), height = 56.dp) {
+            FixedHeightBox(modifier = Modifier.fillMaxWidth(), height = 32.dp) {
                 Row(Modifier) {
                     row.forEach { key ->
                         KeyboardKey(keyboardKey = key, modifier = Modifier.weight(1f))
@@ -66,41 +76,53 @@ fun KeyboardKey(
     val ctx = LocalContext.current
     Box(modifier = modifier.fillMaxHeight(), contentAlignment = Alignment.BottomCenter) {
         Text(
-            keyboardKey,
-            Modifier
+            text = keyName(keyboardKey),
+            modifier = Modifier
                 .fillMaxWidth()
-                .padding(2.dp)
+                .padding(0.dp)
                 .border(1.dp, Color.Black)
                 .clickable(interactionSource = interactionSource, indication = null) {
-                    (ctx as IMEService).currentInputConnection.commitText(
-                        keyboardKey,
-                        keyboardKey
-                            .length
-                    )
+                    if (keyboardKey == "_back") {
+                        (ctx as IMEService).currentInputConnection.deleteSurroundingText(1, 0)
+                    } else if (keyboardKey == "_sel") {
+                        inputMethodManager.showInputMethodPicker()
+                    } else {
+                        (ctx as IMEService).currentInputConnection.commitText(
+                            keyboardKey,
+                            keyboardKey
+                                .length
+                        )
+                    }
                 }
                 .background(Color.White)
-                .padding(
-                    start = 12.dp,
-                    end = 12.dp,
-                    top = 16.dp,
-                    bottom = 16.dp
-                )
-
+                .padding(4.dp),
+            style = TextStyle(fontSize = 20.sp),
+//            fontSize               = 30.dp,
+//            fontWeight = FontWeight.Bold,
         )
         if (pressed.value) {
             Text(
-                keyboardKey,
+                keyName(keyboardKey),
                 Modifier
                     .fillMaxWidth()
                     .border(1.dp, Color.Black)
                     .background(Color.White)
-                    .padding(
-                        start = 16.dp,
-                        end = 16.dp,
-                        top = 16.dp,
-                        bottom = 48.dp
-                    )
+                    .padding(4.dp),
+                style = TextStyle(fontSize = 22.sp, fontWeight = FontWeight.Bold),
+//                fontSize =  30.dp,
+//                fontWeight = FontWeight.Bold
             )
         }
     }
+}
+
+fun keyName(a: String): String {
+    if (a == "_back") {
+        return "⇦Backspace"
+    } else if (a == "_sel") {
+        return "↗Select IME"
+    }
+    return a
+
+
 }
